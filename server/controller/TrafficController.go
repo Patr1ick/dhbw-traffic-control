@@ -17,9 +17,9 @@ func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model
 	err := ctx.ShouldBind(&payload)
 	if err != nil {
 		ctx.JSON(
-			http.StatusInternalServerError,
+			http.StatusBadRequest,
 			gin.H{
-				"status":  http.StatusInternalServerError,
+				"status":  http.StatusBadRequest,
 				"message": "could not read payload",
 			},
 		)
@@ -48,7 +48,6 @@ func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model
 			gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "could not set the id at the position",
-				"error":   err.Error(),
 			},
 		)
 		return
@@ -121,9 +120,6 @@ func HandleClientMove(ctx *gin.Context, session *gocql.Session, settings *model.
 			gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "failed to write to db",
-				"oldPos":  oldPos,
-				"newPos":  newPos,
-				"err":     err.Error(),
 			},
 		)
 		return
@@ -134,9 +130,6 @@ func HandleClientMove(ctx *gin.Context, session *gocql.Session, settings *model.
 			gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "failed to write to db",
-				"oldPos":  oldPos,
-				"newPos":  newPos,
-				"err":     err.Error(),
 			},
 		)
 		return
