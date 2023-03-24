@@ -20,3 +20,12 @@ main.exe -x 10 -y 10 -z 2
 ```
 
 The server will start and listen to port 8080. It will connect to Apache Cassandra on the keyspace **traffic_control**. It expects a table named **traffic_area**. The command line arguments are the size of the area.
+
+## Docker
+
+```bash
+# Build docker container
+docker build -t traffic_control .
+# Start the server
+docker run -p 8080:8080 traffic_control
+```
