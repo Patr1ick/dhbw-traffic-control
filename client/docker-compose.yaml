@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+    caddy:
+        build: ./caddy
+        container_name: load_balancer
+        ports:
+            - 9000:9000
