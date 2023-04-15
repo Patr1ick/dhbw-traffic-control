@@ -1,13 +1,15 @@
 package controller
 
 import (
-	"math/rand"
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/Patr1ick/dhbw-traffic-control/server/logic"
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
+	"github.com/google/uuid"
 )
 
 func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model.Settings) {
@@ -26,7 +28,7 @@ func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model
 		return
 	}
 
-	ta, err := logic.LoadTable(session, settings)
+	cl, err := logic.LoadTable(session, settings)
 	if err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
@@ -38,28 +40,31 @@ func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model
 		return
 	}
 
-	id := rand.Intn(ta.Width*ta.Height*ta.Depth - 1)
+	id := uuid.New()
 	cord := model.Coordinate{X: payload.Pos.X, Y: payload.Pos.Y}
 
-	pos, err := ta.Set(id, cord)
-	if err != nil {
+	if !settings.Valid(cord) {
 		ctx.JSON(
-			http.StatusInternalServerError,
+			http.StatusBadRequest,
 			gin.H{
-				"status":  http.StatusInternalServerError,
-				"message": "could not set the id at the position",
+				"status":  http.StatusBadRequest,
+				"message": fmt.Errorf("no valid position"),
 			},
 		)
 		return
 	}
 
-	err = logic.SavePos(id, *pos, session)
-	if err != nil {
+	client := &model.Client{
+		Id:  id,
+		Pos: cord,
+	}
+
+	if err = logic.InitClient(session, cl, client); err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
 				"status":  http.StatusInternalServerError,
-				"message": "could not save the position",
+				"message": err.Error(),
 			},
 		)
 		return
@@ -67,11 +72,7 @@ func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model
 
 	ctx.JSON(
 		http.StatusOK,
-		gin.H{
-			"id":     id,
-			"pos":    cord,
-			"y_area": ta.Area,
-		},
+		client,
 	)
 }
 
@@ -114,22 +115,26 @@ func HandleClientMove(ctx *gin.Context, session *gocql.Session, settings *model.
 		return
 	}
 
-	if err = logic.SavePos(payload.Id, *newPos, session); err != nil {
+	log.Printf("id: %v, oldPos: %v, newPos: %v", payload.Id, oldPos, newPos)
+
+	if err = logic.RemoveClient(model.Client{Pos: *oldPos, Id: payload.Id}, session); err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"status":  http.StatusInternalServerError,
-				"message": "failed to write to db",
+				"status":   http.StatusInternalServerError,
+				"internal": err.Error(),
+				"message":  "failed to write to db",
 			},
 		)
 		return
 	}
-	if err = logic.SavePos(-1, *oldPos, session); err != nil {
+	if err = logic.AddClient(model.Client{Pos: *newPos, Id: payload.Id}, session); err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"status":  http.StatusInternalServerError,
-				"message": "failed to write to db",
+				"status":   http.StatusInternalServerError,
+				"internal": err.Error(),
+				"message":  "failed to write to db",
 			},
 		)
 		return

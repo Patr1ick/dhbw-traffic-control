@@ -46,37 +46,8 @@ func connectDB() *gocql.Session {
 
 }
 
-func initDB(session *gocql.Session, settings *model.Settings) {
-	// Check if area is existing
-	var length int
-	err := session.Query("SELECT COUNT(*) FROM traffic_area").Scan(&length)
-	if err != nil {
-		log.Fatalln(aurora.Red("Could not read from table"))
-		os.Exit(3)
-	}
-	if length == 0 {
-		log.Println(aurora.Yellow("No data in table. Initialise table..."))
-		ta := &model.TrafficArea{
-			Settings: settings,
-		}
-		ta.Create()
-		// Save to DB
-		X, Y, Z, Value := ta.ToTable()
-
-		for i, val := range Value {
-			err = session.Query(`INSERT INTO traffic_area (x, y, z, value) VALUES (?, ?, ?, ?)`, X[i], Y[i], Z[i], val).Exec()
-			if err != nil {
-				os.Exit(3)
-			}
-		}
-
-	}
-}
-
 func Start(settings *model.Settings) {
 	session := connectDB()
-
-	initDB(session, settings)
 
 	r := setupRouter(session, settings)
 	r.Run()

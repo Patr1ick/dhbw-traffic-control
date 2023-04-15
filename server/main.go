@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
@@ -20,7 +20,7 @@ func main() {
 	err := parser.Parse(os.Args)
 
 	if err != nil {
-		fmt.Println(aurora.Red(err.Error()))
+		log.Println(aurora.Red(err.Error()))
 		os.Exit(1)
 	}
 

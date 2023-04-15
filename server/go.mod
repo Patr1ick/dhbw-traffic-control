@@ -2,10 +2,12 @@ module github.com/Patr1ick/dhbw-traffic-control/server
 
 go 1.20
 
-require github.com/gin-gonic/gin v1.9.0
+require (
+	github.com/akamensky/argparse v1.4.0
+	github.com/gin-gonic/gin v1.9.0
+)
 
 require (
-	github.com/akamensky/argparse v1.4.0 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -20,6 +22,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gocql/gocql v1.3.1
+	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
