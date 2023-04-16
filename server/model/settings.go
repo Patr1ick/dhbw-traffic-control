@@ -1,9 +1,10 @@
 package model
 
 type Settings struct {
-	Width  int
-	Height int
-	Depth  int
+	Width            int
+	Height           int
+	Depth            int
+	CassandraAddress *string
 }
 
 func (settings Settings) Valid(pos Coordinate) bool {

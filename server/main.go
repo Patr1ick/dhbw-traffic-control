@@ -16,6 +16,7 @@ func main() {
 	w := parser.Int("x", "width", &argparse.Options{Required: true, Help: "Width of the field"})
 	h := parser.Int("y", "height", &argparse.Options{Required: true, Help: "Height of the field"})
 	d := parser.Int("z", "depth", &argparse.Options{Required: true, Help: "Depth of the field"})
+	db := parser.String("a", "address", &argparse.Options{Required: true, Help: "Address of Cassandra"})
 
 	err := parser.Parse(os.Args)
 
@@ -25,9 +26,10 @@ func main() {
 	}
 
 	settings := &model.Settings{
-		Width:  *w,
-		Height: *h,
-		Depth:  *d,
+		Width:            *w,
+		Height:           *h,
+		Depth:            *d,
+		CassandraAddress: db,
 	}
 
 	server.Start(settings)
