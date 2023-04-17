@@ -1,11 +1,11 @@
 CREATE keyspace traffic_control WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 
-CREATE TABLE traffic_area
+CREATE TABLE traffic_control.clients
 (
-    x     int,
-    y     int,
-    z     int,
-    value int,
-    PRIMARY KEY ((y, z, x))
+    x  int,
+    z  int,
+    y  int,
+    id UUID,
+    PRIMARY KEY ((x, z, y))
 );
-// TODO
+

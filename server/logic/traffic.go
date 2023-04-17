@@ -5,51 +5,55 @@ import (
 	"math"
 
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
+	"github.com/gocql/gocql"
+	"github.com/google/uuid"
 )
 
-func Start(trafficArea *model.TrafficArea, id int) (*model.Coordinate, error) {
-	currentPos := trafficArea.Get(id)
-	if currentPos == nil {
-		return currentPos, fmt.Errorf("client already exists")
+func InitClient(session *gocql.Session, cl *model.ClientList, newClient *model.Client) error {
+
+	z := cl.GetAvailableSlot(newClient.Pos)
+
+	if z == nil {
+		return fmt.Errorf("position not free")
 	}
 
-	for y := 0; y < len(trafficArea.Area[0]); y++ {
-		pos := model.Coordinate{X: 0, Y: y}
-		if trafficArea.IsFree(pos) != -1 {
-			trafficArea.Set(id, pos)
-			return &pos, nil
-		}
-	}
+	newClient.Pos.Z = z
 
-	return nil, fmt.Errorf("no free position found")
+	if err := AddClient(*newClient, session); err != nil {
+		return err
+	}
+	return nil
 }
 
-func Move(trafficArea *model.TrafficArea, id int, target model.Coordinate) (*model.Coordinate, *model.Coordinate, error) {
-	currentPos := trafficArea.Get(id)
+func Move(cl *model.ClientList, id uuid.UUID, target model.Coordinate) (*model.Coordinate, *model.Coordinate, error) {
+	currentPos := cl.GetPos(id)
+	if currentPos == nil {
+		return nil, nil, fmt.Errorf("not initialised")
+	}
 	bestPos := currentPos
 	distance := GetDistance(*currentPos, target)
+
 	for xOffset := -1; xOffset <= 1; xOffset++ {
 		for yOffset := -1; yOffset <= 1; yOffset++ {
-			x := currentPos.X + xOffset
-			y := currentPos.Y + yOffset
 
-			//  Check boundaries
-			if x < 0 {
-				x = 0
+			newPos := model.Coordinate{
+				X: currentPos.X + xOffset,
+				Y: currentPos.Y + yOffset,
 			}
-			if x > trafficArea.Width {
-				x = trafficArea.Width
+			if newPos.X < 0 {
+				newPos.X = 0
 			}
-			if y < 0 {
-				x = 0
+			if newPos.X > cl.Settings.Width-1 {
+				newPos.X = cl.Settings.Width - 1
 			}
-			if y > trafficArea.Height {
-				y = trafficArea.Height
+			if newPos.Y < 0 {
+				newPos.Y = 0
 			}
-
-			newPos := model.Coordinate{X: x, Y: y}
-			if z := trafficArea.IsFree(newPos); z != -1 {
-				newPos.Z = &z
+			if newPos.Y > cl.Settings.Height-1 {
+				newPos.Y = cl.Settings.Height - 1
+			}
+			if z := cl.GetAvailableSlot(newPos); z != nil {
+				newPos.Z = z
 				newDistance := GetDistance(newPos, target)
 				if newDistance < distance {
 					distance = newDistance
@@ -57,14 +61,6 @@ func Move(trafficArea *model.TrafficArea, id int, target model.Coordinate) (*mod
 				}
 			}
 		}
-	}
-
-	// Move
-	if err := trafficArea.Remove(id, *currentPos); err != nil {
-		return nil, nil, err
-	}
-	if _, err := trafficArea.Set(id, *bestPos); err != nil {
-		return nil, nil, err
 	}
 	return currentPos, bestPos, nil
 }
