@@ -1,11 +1,13 @@
-package main
+package logic
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,11 +19,13 @@ type Pos struct {
 }
 
 type StartPos struct {
-	Pos Pos
-	Id  uuid.UUID
+	StartX  int
+	StartY  int
+	TargetX int
+	TargetY int
 }
 
-type TargetPos struct {
+type VehiclePos struct {
 	Pos Pos
 	Id  uuid.UUID
 }
@@ -31,47 +35,42 @@ type UpdatePos struct {
 	OldPos Pos
 }
 
-func main() {
+func LeadVehicle(pos StartPos) {
 
-	var xStartPos = 0
-	var yStartPos = 0
-
-	var xTargetPos = 13
-	var yTargetPos = 12
 	//Timestamp start
+	timeBeginn := time.Now()
 
-	//timeBeginn := time.Now()
+	startPos := VehiclePos{}
+	startPos.Pos.X = pos.StartX
+	startPos.Pos.Y = pos.StartY
 
-	var myStartPos StartPos
-	myStartPos.Pos.X = xStartPos
-	myStartPos.Pos.Y = yStartPos
-
-	var myTargetPos TargetPos
-	myTargetPos.Pos.X = xTargetPos
-	myTargetPos.Pos.Y = yTargetPos
+	targetPos := VehiclePos{}
+	targetPos.Pos.X = pos.TargetX
+	targetPos.Pos.Y = pos.TargetY
 
 	var myUpdatePos UpdatePos
 
-	start(&myStartPos)
+	start(&startPos)
 	//Schleife, bis am ziel angekommen
-	myTargetPos.Id = myStartPos.Id
-
+	targetPos.Id = startPos.Id
+	log.Println("ID: ", targetPos.Id)
 	for {
-		move(&myTargetPos, &myUpdatePos)
-		fmt.Println("target: ", myTargetPos.Pos.X, " ", myTargetPos.Pos.Y)
-		fmt.Println("update: ", myUpdatePos.NewPos.X, " ", myUpdatePos.NewPos.Y)
-		if (myUpdatePos.NewPos.X == myTargetPos.Pos.X) &&
-			(myUpdatePos.NewPos.Y == myTargetPos.Pos.Y) {
+		move(&targetPos, &myUpdatePos)
+
+		if (myUpdatePos.NewPos.X == targetPos.Pos.X) &&
+			(myUpdatePos.NewPos.Y == targetPos.Pos.Y) {
 			break
 		}
 	}
 
 	//Timestamp stop
-	//timeEnd := time.Now()
-	//timeFinal := timeBeginn.Sub(timeEnd)
+	timeEnd := time.Now()
+	timeFinal := timeEnd.Sub(timeBeginn)
+	log.Println("Time: ", timeFinal, " ID: ", targetPos.Id, " startPosX: ", startPos.Pos.X, " startPosY: ", startPos.Pos.Y,
+		" -- ", " targetPosX: ", myUpdatePos.NewPos.X, " targetPosY: ", myUpdatePos.NewPos.Y)
 }
 
-func start(startPos *StartPos) {
+func start(startPos *VehiclePos) {
 	const serverUrl = "http://localhost:8080/v1/traffic/start"
 
 	requestBodyString := fmt.Sprintf(`
@@ -84,14 +83,12 @@ func start(startPos *StartPos) {
 	`, startPos.Pos.X, startPos.Pos.Y)
 
 	requestBody := strings.NewReader(requestBodyString)
-
 	response, _ := http.Post(serverUrl, "application/json", requestBody)
 	content, _ := io.ReadAll(response.Body)
 	json.Unmarshal(content, &startPos)
-	fmt.Println("Response: ", startPos)
 }
 
-func move(targetPos *TargetPos, updatePos *UpdatePos) {
+func move(targetPos *VehiclePos, updatePos *UpdatePos) {
 	const moveUrl = "http://localhost:8080/v1/traffic/move"
 	requestBodyString := fmt.Sprintf(`
 	{

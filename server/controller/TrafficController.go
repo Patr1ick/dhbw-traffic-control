@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/Patr1ick/dhbw-traffic-control/server/logic"
@@ -115,7 +114,7 @@ func HandleClientMove(ctx *gin.Context, session *gocql.Session, settings *model.
 		return
 	}
 
-	log.Printf("id: %v, oldPos: %v, newPos: %v", payload.Id, oldPos, newPos)
+	//log.Printf("id: %v, oldPos: %v, newPos: %v", payload.Id, oldPos, newPos)
 
 	if err = logic.RemoveClient(model.Client{Pos: *oldPos, Id: payload.Id}, session); err != nil {
 		ctx.JSON(
