@@ -4,40 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 )
-
-func main() {
-	const serverUrl = "http://localhost:8080/v1/traffic/start"
-
-	requestBody := strings.NewReader(`
-		{
-			"pos": {
-				"x": 3,
-				"y": 4
-
-			} 
-		}
-	`)
-	//Timestamp start
-	timeBeginn := time.Now()
-	response, err := http.Post(serverUrl, "application/json", requestBody)
-	log.Print(response)
-	if err != nil {
-		log.Print(err)
-	}
-
-	//Schleife, bis am ziel angekommen
-
-	//Timestamp stop
-	timeEnd := time.Now()
-	timeFinal := timeBeginn.Sub(timeEnd)
-}
 
 type Pos struct {
 	X int
@@ -45,15 +16,63 @@ type Pos struct {
 	Z int
 }
 
-type vehiclePos struct {
+type StartPos struct {
 	Pos Pos
 	Id  uuid.UUID
 }
 
-func start(x int, y int) {
-	const serverUrl = "http://localhost:8080/v1/traffic/start"
+type TargetPos struct {
+	Pos Pos
+	Id  uuid.UUID
+}
 
-	var cor vehiclePos
+type UpdatePos struct {
+	NewPos Pos
+	OldPos Pos
+}
+
+func main() {
+
+	var xStartPos = 0
+	var yStartPos = 0
+
+	var xTargetPos = 13
+	var yTargetPos = 12
+	//Timestamp start
+
+	//timeBeginn := time.Now()
+
+	var myStartPos StartPos
+	myStartPos.Pos.X = xStartPos
+	myStartPos.Pos.Y = yStartPos
+
+	var myTargetPos TargetPos
+	myTargetPos.Pos.X = xTargetPos
+	myTargetPos.Pos.Y = yTargetPos
+
+	var myUpdatePos UpdatePos
+
+	start(&myStartPos)
+	//Schleife, bis am ziel angekommen
+	myTargetPos.Id = myStartPos.Id
+
+	for {
+		move(&myTargetPos, &myUpdatePos)
+		fmt.Println("target: ", myTargetPos.Pos.X, " ", myTargetPos.Pos.Y)
+		fmt.Println("update: ", myUpdatePos.NewPos.X, " ", myUpdatePos.NewPos.Y)
+		if (myUpdatePos.NewPos.X == myTargetPos.Pos.X) &&
+			(myUpdatePos.NewPos.Y == myTargetPos.Pos.Y) {
+			break
+		}
+	}
+
+	//Timestamp stop
+	//timeEnd := time.Now()
+	//timeFinal := timeBeginn.Sub(timeEnd)
+}
+
+func start(startPos *StartPos) {
+	const serverUrl = "http://localhost:8080/v1/traffic/start"
 
 	requestBodyString := fmt.Sprintf(`
 	{
@@ -62,20 +81,17 @@ func start(x int, y int) {
 			"y": %d
 		} 
 	}
-	`, 15, 21)
+	`, startPos.Pos.X, startPos.Pos.Y)
 
 	requestBody := strings.NewReader(requestBodyString)
 
 	response, _ := http.Post(serverUrl, "application/json", requestBody)
 	content, _ := io.ReadAll(response.Body)
-	json.Unmarshal(content, &cor)
-	fmt.Println("Welcome to hs", cor)
-
-	move(cor.Pos.X, cor.Pos.Y, cor.Id.String())
-
+	json.Unmarshal(content, &startPos)
+	fmt.Println("Response: ", startPos)
 }
 
-func move(x int, y int, id string) {
+func move(targetPos *TargetPos, updatePos *UpdatePos) {
 	const moveUrl = "http://localhost:8080/v1/traffic/move"
 	requestBodyString := fmt.Sprintf(`
 	{
@@ -85,10 +101,11 @@ func move(x int, y int, id string) {
 		},
 		"Id": "%s"
 	}
-	`, x, y, id)
-	fmt.Println(requestBodyString)
+	`, targetPos.Pos.X, targetPos.Pos.Y, targetPos.Id)
 	requestBody := strings.NewReader(requestBodyString)
 	response, _ := http.Post(moveUrl, "application/json", requestBody)
 	content, _ := io.ReadAll(response.Body)
-	fmt.Println("Welcome to hs", string(content))
+	json.Unmarshal(content, &updatePos)
+	//fmt.Println("target: ", updatePos)
+	//fmt.Println("Response: ", string(content))
 }
