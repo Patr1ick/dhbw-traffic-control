@@ -39,6 +39,7 @@ func connectDB(settings *model.Settings) *gocql.Session {
 		Username: "cassandra",
 		Password: "cassandra",
 	}
+	cluster.Timeout = time.Second * 30
 	session, err := cluster.CreateSession()
 	if err != nil {
 		log.Println(aurora.Red("Could not connect to Casssandra on the first try..."))
@@ -51,6 +52,7 @@ func connectDB(settings *model.Settings) *gocql.Session {
 			}
 			time.Sleep(5 * time.Second)
 		}
+		log.Fatalln(aurora.Red("Could not connect to Cassandra. Terminating server..."))
 	}
 	log.Printf("%s on KeySpace %v", aurora.Green("Connected to Cassandra"), cluster.Keyspace)
 
