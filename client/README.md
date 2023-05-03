@@ -13,7 +13,7 @@ go run main.go
 Caddy is used as load balancer and reverse proxy to distribute the requests to the backend. The default port that Caddy listens to is `9000`. The port or host may have to be changed in the `client.go` at the following positions:
 
 -   [client.go (Line 79)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/client/logic/client.go#L79)
--   [client.go (Line 132)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/client/logic/client.go#L132)
+-   [client.go (Line 136)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/client/logic/client.go#L136)
 
 ### Start Caddy
 
