@@ -15,14 +15,18 @@ services:
             - yb-master
         restart: always
 
-    db-master:
+    yb-master:
         image: yugabytedb/yugabyte:latest
         container_name: yb-master
         command: >
             ./bin/yb-master 
             --master_addresses 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 
-            --server_broadcast_addresses 192.168.178.46 
+            --rpc_bind_addresses 10.5.0.6:7100
+            --server_broadcast_addresses 192.168.178.46:7100
+            --webserver_interface 10.5.0.6
             --fs_data_dirs "/home/yugabyte/yb_data" 
+            --placement_region raspi1
+            --placement_zone node1
             --replication_factor=3
             --logtostderr=true
         environment:
@@ -35,15 +39,18 @@ services:
             net:
                 ipv4_address: 10.5.0.6
 
-    db-tserver:
+    yb-tserver:
         image: yugabytedb/yugabyte:latest
         container_name: yb-tserver
         command: >
             ./bin/yb-tserver 
             --tserver_master_addrs 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 
-            --server_broadcast_addresses 192.168.178.46 
+            --rpc_bind_addresses  10.5.0.7:9100 
+            --server_broadcast_addresses 192.168.178.46:9100
+            --cql_proxy_bind_address 192.168.178.46:9042
+            --webserver_interface 10.5.0.7
             --placement_zone node1 
-            --fs_data_dirs "//home/yugabyte/yb_data"
+            --fs_data_dirs "/home/yugabyte/yb_data"
         environment:
             - YCQL_USER=cassandra
             - YCQL_PASSWORD=cassandra
