@@ -11,7 +11,7 @@ Note that the IP addresses for YugabyteDB need to be changed for the database to
 -   [docker-compose.yaml (Line 22)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L22): The `master_addresses` specifies all masters of Yugabyte which runs on all (three) nodes.
 -   [docker-compose.yaml (Line 23)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L23): The `rpc_bind_addresses` specifies the IP-address the Yugabyte master instance is listening to.
 -   [docker-compose.yaml (Line 42)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L22): The `tserver_master_addrs` specifies in a comma-seperated list all IP-addresses for the `yb-master` which runs on all (three) nodes.
--   [docker-compose.yaml (Line 23)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L23): The `rpc_bind_addresses` specifies the IP-address the Yugabyte tserver instance is listening to.
+-   [docker-compose.yaml (Line 43)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L43): The `rpc_bind_addresses` specifies the IP-address the Yugabyte tserver instance is listening to.
 
 ### Start the docker container
 
