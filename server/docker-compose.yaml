@@ -4,45 +4,46 @@ services:
         build: .
         container_name: server
         environment:
-            - DATABASE_ADDRESS=10.5.0.6
+            - DATABASE_ADDRESS=10.5.0.7
         ports:
             - 8080:8080
         networks:
             net:
                 ipv4_address: 10.5.0.5
         depends_on:
-            - db
+            - yb-tserver
+            - yb-master
         restart: always
 
     db-master:
         image: yugabytedb/yugabyte:latest
-        container_name: db
+        container_name: yb-master
         command: >
-            ./bin/yb-master \
-            --master_addresses 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 \
-            --rpc_bind_addresses 192.168.178.46 \
-            --fs_data_dirs "/home/centos/disk1,/home/centos/disk2" \
+            ./bin/yb-master 
+            --master_addresses 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 
+            --server_broadcast_addresses 192.168.178.46 
+            --fs_data_dirs "/home/yugabyte/yb_data" 
             --replication_factor=3
+            --logtostderr=true
         environment:
             - YCQL_USER=cassandra
             - YCQL_PASSWORD=cassandra
         ports:
             - 7000:7000
             - 7100:7100
-            - 9042:9042
         networks:
             net:
                 ipv4_address: 10.5.0.6
 
     db-tserver:
         image: yugabytedb/yugabyte:latest
-        container_name: db
+        container_name: yb-tserver
         command: >
-            ./bin/yb-tserver \
-            --tserver_master_addrs 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 \
-            --rpc_bind_addresses 192.168.178.46 \
-            --placement_zone node1 \
-            --fs_data_dirs "/home/centos/disk1,/home/centos/disk2" &
+            ./bin/yb-tserver 
+            --tserver_master_addrs 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 
+            --server_broadcast_addresses 192.168.178.46 
+            --placement_zone node1 
+            --fs_data_dirs "//home/yugabyte/yb_data"
         environment:
             - YCQL_USER=cassandra
             - YCQL_PASSWORD=cassandra
@@ -52,7 +53,7 @@ services:
             - 9042:9042
         networks:
             net:
-                ipv4_address: 10.5.0.6
+                ipv4_address: 10.5.0.7
 
 networks:
     net:
