@@ -35,7 +35,7 @@ type UpdatePos struct {
 	OldPos Pos
 }
 
-func LeadVehicle(pos StartPos) {
+func LeadVehicle(pos StartPos) error {
 
 	//Timestamp start
 	timeBeginn := time.Now()
@@ -50,7 +50,11 @@ func LeadVehicle(pos StartPos) {
 
 	var myUpdatePos UpdatePos
 
-	start(&startPos)
+	if start(&startPos) != nil {
+		log.Println("Error beim start point")
+		return fmt.Errorf("could not set start point")
+	}
+
 	//Schleife, bis am ziel angekommen
 	targetPos.Id = startPos.Id
 	log.Println("ID: ", targetPos.Id)
@@ -62,15 +66,16 @@ func LeadVehicle(pos StartPos) {
 			break
 		}
 	}
-
 	//Timestamp stop
 	timeEnd := time.Now()
 	timeFinal := timeEnd.Sub(timeBeginn)
 	log.Println("Time: ", timeFinal, " ID: ", targetPos.Id, " startPosX: ", startPos.Pos.X, " startPosY: ", startPos.Pos.Y,
 		" -- ", " targetPosX: ", myUpdatePos.NewPos.X, " targetPosY: ", myUpdatePos.NewPos.Y)
+
+	return nil
 }
 
-func start(startPos *VehiclePos) {
+func start(startPos *VehiclePos) error {
 	const serverUrl = "http://localhost:8080/v1/traffic/start"
 
 	requestBodyString := fmt.Sprintf(`
@@ -82,13 +87,54 @@ func start(startPos *VehiclePos) {
 	}
 	`, startPos.Pos.X, startPos.Pos.Y)
 
+	client := &http.Client{
+		Transport: &http.Transport{
+			DisableKeepAlives: true,
+		},
+	}
+
 	requestBody := strings.NewReader(requestBodyString)
-	response, _ := http.Post(serverUrl, "application/json", requestBody)
-	content, _ := io.ReadAll(response.Body)
-	json.Unmarshal(content, &startPos)
+	response, err := client.Post(serverUrl, "application/json", requestBody)
+	log.Printf("%T %+v", err, err)
+	if err != nil || response.StatusCode == 500 {
+		defer response.Body.Close()
+		for i := 0; i < 5; i++ {
+			log.Printf("attemp")
+			response, err = http.Post(serverUrl, "application/json", requestBody)
+
+			log.Printf("nach request")
+			log.Println(response.StatusCode)
+			if err != nil || response.StatusCode == 500 {
+				defer response.Body.Close()
+				continue
+			}
+
+			if response.StatusCode == 200 {
+				content, err := io.ReadAll(response.Body)
+				if err != nil {
+					return err
+				}
+				if err = json.Unmarshal(content, &startPos); err != nil {
+					return err
+				}
+				return nil
+			}
+			//time.Sleep(2 * time.Second)
+			log.Printf("ende request")
+		}
+	}
+	log.Printf("kein error")
+	content, err := io.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(content, &startPos); err != nil {
+		return err
+	}
+	return nil
 }
 
-func move(targetPos *VehiclePos, updatePos *UpdatePos) {
+func move(targetPos *VehiclePos, updatePos *UpdatePos) error {
 	const moveUrl = "http://localhost:8080/v1/traffic/move"
 	requestBodyString := fmt.Sprintf(`
 	{
@@ -100,9 +146,26 @@ func move(targetPos *VehiclePos, updatePos *UpdatePos) {
 	}
 	`, targetPos.Pos.X, targetPos.Pos.Y, targetPos.Id)
 	requestBody := strings.NewReader(requestBodyString)
-	response, _ := http.Post(moveUrl, "application/json", requestBody)
-	content, _ := io.ReadAll(response.Body)
-	json.Unmarshal(content, &updatePos)
+	response, err := http.Post(moveUrl, "application/json", requestBody)
+
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode == 200 {
+		content, err := io.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+
+		if err = json.Unmarshal(content, &updatePos); err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("could not set start point")
+	}
+
 	//fmt.Println("target: ", updatePos)
 	//fmt.Println("Response: ", string(content))
+	return nil
 }
