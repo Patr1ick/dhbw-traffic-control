@@ -12,4 +12,6 @@ RUN go build -o /traffic-control
 
 HEALTHCHECK --interval=60s --timeout=3s CMD curl -f http://localhost/v1/health
 
-CMD /traffic-control -x 1000 -y 1000 -z 2 --address $CASSANDRA_ADDRESS
+ENV GIN_MODE=release
+
+CMD /traffic-control -x 1000 -y 1000 -z 2 --address $DATABASE_ADDRESS

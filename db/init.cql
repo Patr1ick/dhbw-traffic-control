@@ -1,11 +1,4 @@
-CREATE keyspace traffic_control WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+CREATE keyspace traffic_control;
 
-CREATE TABLE traffic_control.clients
-(
-    x  int,
-    z  int,
-    y  int,
-    id UUID,
-    PRIMARY KEY ((x, z, y))
-);
-
+CREATE TABLE traffic_control.clients ( x int, y int, z int, id uuid PRIMARY KEY ) WITH transactions = {'enabled': 'true'};
+CREATE UNIQUE INDEX traffic_control_coordinates ON traffic_control.clients(x, y, z);

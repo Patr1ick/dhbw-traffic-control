@@ -7,8 +7,8 @@ import (
 	"github.com/Patr1ick/dhbw-traffic-control/server/logic"
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
 	"github.com/gin-gonic/gin"
-	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/yugabyte/gocql"
 )
 
 func HandleClientStart(ctx *gin.Context, session *gocql.Session, settings *model.Settings) {
@@ -114,20 +114,7 @@ func HandleClientMove(ctx *gin.Context, session *gocql.Session, settings *model.
 		return
 	}
 
-	//log.Printf("id: %v, oldPos: %v, newPos: %v", payload.Id, oldPos, newPos)
-
-	if err = logic.RemoveClient(model.Client{Pos: *oldPos, Id: payload.Id}, session); err != nil {
-		ctx.JSON(
-			http.StatusInternalServerError,
-			gin.H{
-				"status":   http.StatusInternalServerError,
-				"internal": err.Error(),
-				"message":  "failed to write to db",
-			},
-		)
-		return
-	}
-	if err = logic.AddClient(model.Client{Pos: *newPos, Id: payload.Id}, session); err != nil {
+	if err = logic.UpdateClient(model.Client{Pos: *newPos, Id: payload.Id}, session); err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{

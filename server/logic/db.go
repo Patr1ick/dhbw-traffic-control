@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
-	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/yugabyte/gocql"
 )
 
 func LoadTable(session *gocql.Session, settings *model.Settings) (*model.ClientList, error) {
@@ -66,8 +66,12 @@ func AddClient(client model.Client, session *gocql.Session) error {
 	}
 	return nil
 }
-func RemoveClient(client model.Client, session *gocql.Session) error {
-	err := session.Query(`DELETE FROM traffic_control.clients WHERE x = ? AND y = ? AND z = ?`, client.Pos.X, client.Pos.Y, client.Pos.Z).Exec()
+func UpdateClient(client model.Client, session *gocql.Session) error {
+	uuid, err := gocql.ParseUUID(client.Id.String())
+	if err != nil {
+		return err
+	}
+	err = session.Query(`UPDATE traffic_control.clients SET x = ?, y = ?, z = ? WHERE id = ?`, client.Pos.X, client.Pos.Y, client.Pos.Z, uuid).Exec()
 	if err != nil {
 		return err
 	}

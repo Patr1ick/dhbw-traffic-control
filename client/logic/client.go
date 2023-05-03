@@ -66,11 +66,11 @@ func LeadVehicle(pos StartPos) error {
 			break
 		}
 	}
+
 	// Stop used time
 	timeEnd := time.Now()
 	timeFinal := timeEnd.Sub(timeBeginn)
 	log.Printf("Used time: %v | ID: %v | Start: (%03d,%03d) | Stop: (%03d,%03d)", timeFinal, targetPos.Id, startPos.Pos.X, startPos.Pos.Y, myUpdatePos.NewPos.X, myUpdatePos.NewPos.Y)
-	// log.Println("Time: ", timeFinal, " ID: ", targetPos.Id, " startPosX: ", startPos.Pos.X, " startPosY: ", startPos.Pos.Y, "-- ", " targetPosX: ", myUpdatePos.NewPos.X, " targetPosY: ", myUpdatePos.NewPos.Y)
 
 	return nil
 }
@@ -95,9 +95,6 @@ func start(startPos *VehiclePos) error {
 	if err != nil || response.StatusCode == 500 {
 
 		for i := 0; i < 5; i++ {
-			// log.Printf("---------------------------")
-			// log.Printf("Retry HTTP request (%v try)", i)
-
 			response, err = http.Post(
 				url,
 				"application/json",
@@ -118,7 +115,6 @@ func start(startPos *VehiclePos) error {
 				}
 				return nil
 			}
-			// time.Sleep(2 * time.Second)
 		}
 		return fmt.Errorf("could not initialise client")
 	}
@@ -146,7 +142,6 @@ func move(targetPos *VehiclePos, updatePos *UpdatePos) error {
 	requestBody := strings.NewReader(requestBodyString)
 	response, err := http.Post(url, "application/json", requestBody)
 	if err != nil {
-		time.Sleep(time.Millisecond)
 		return err
 	}
 

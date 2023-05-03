@@ -4,53 +4,29 @@ services:
         build: ./server
         container_name: server
         environment:
-            - CASSANDRA_ADDRESS=10.5.0.6
+            - DATABASE_ADDRESS=10.5.0.6
         ports:
             - 8080:8080
         depends_on:
-            - db-init
+            - db
         networks:
             net:
                 ipv4_address: 10.5.0.5
 
     db:
-        image: cassandra:latest
+        image: yugabytedb/yugabyte:latest
         container_name: db
+        command: >
+            bin/yugabyted start --use_cassandra_authentication true --ui true --daemon false
         environment:
-            - CASSANDRA_USER=cassandra
-            - CASSANDRA_PASSWORD=cassandra
-            - CASSANDRA_PASSWORD_SEEDER=yes
-            - CASSANDRA_LISTEN_ADDRESS=10.5.0.6
+            - YCQL_USER=cassandra
+            - YCQL_PASSWORD=cassandra
         ports:
+            - 5433:5433
+            - 7000:7000
+            - 9000:9000
             - 9042:9042
-        networks:
-            net:
-                ipv4_address: 10.5.0.6
-        healthcheck:
-            test:
-                [
-                    "CMD",
-                    "cqlsh",
-                    "10.5.0.6",
-                    "-u cassandra",
-                    "-p cassandra",
-                    "-e describe keyspaces",
-                ]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-
-    db-init:
-        image: cassandra:latest
-        container_name: cassandra-init
-        depends_on:
-            db:
-                condition: service_healthy
-        volumes:
-            - ./db/init.cql:/init.cql
-        command: /bin/bash -c "cqlsh 10.5.0.6 -u cassandra -p cassandra -f /init.cql"
-        networks:
-            - net
+            - 15433:15433
 
 networks:
     net:

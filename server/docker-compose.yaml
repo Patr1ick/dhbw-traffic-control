@@ -4,7 +4,7 @@ services:
         build: .
         container_name: server
         environment:
-            - CASSANDRA_ADDRESS=10.5.0.6
+            - DATABASE_ADDRESS=10.5.0.6
         ports:
             - 8080:8080
         networks:
@@ -14,34 +14,45 @@ services:
             - db
         restart: always
 
-    db:
-        image: cassandra:latest
+    db-master:
+        image: yugabytedb/yugabyte:latest
         container_name: db
+        command: >
+            ./bin/yb-master \
+            --master_addresses 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 \
+            --rpc_bind_addresses 192.168.178.46 \
+            --fs_data_dirs "/home/centos/disk1,/home/centos/disk2" \
+            --replication_factor=3
         environment:
-            - CASSANDRA_USER=cassandra
-            - CASSANDRA_PASSWORD=cassandra
-            - CASSANDRA_PASSWORD_SEEDER=yes
-            - CASSANDRA_SEEDS=192.168.178.48,192.168.178.49
-            - CASSANDRA_BROADCAST_ADDRESS=192.168.178.47
+            - YCQL_USER=cassandra
+            - YCQL_PASSWORD=cassandra
+        ports:
+            - 7000:7000
+            - 7100:7100
+            - 9042:9042
         networks:
             net:
                 ipv4_address: 10.5.0.6
+
+    db-tserver:
+        image: yugabytedb/yugabyte:latest
+        container_name: db
+        command: >
+            ./bin/yb-tserver \
+            --tserver_master_addrs 192.168.178.46:7100,192.168.178.47:7100,192.168.178.48:7100 \
+            --rpc_bind_addresses 192.168.178.46 \
+            --placement_zone node1 \
+            --fs_data_dirs "/home/centos/disk1,/home/centos/disk2" &
+        environment:
+            - YCQL_USER=cassandra
+            - YCQL_PASSWORD=cassandra
         ports:
+            - 9000:9000
+            - 9100:9100
             - 9042:9042
-            - 7000:7000
-        healthcheck:
-            test:
-                [
-                    "CMD",
-                    "cqlsh",
-                    "10.5.0.6",
-                    "-u cassandra",
-                    "-p cassandra",
-                    "-e describe keyspaces",
-                ]
-            interval: 15s
-            timeout: 10s
-            retries: 10
+        networks:
+            net:
+                ipv4_address: 10.5.0.6
 
 networks:
     net:

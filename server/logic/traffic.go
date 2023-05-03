@@ -5,8 +5,8 @@ import (
 	"math"
 
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
-	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/yugabyte/gocql"
 )
 
 func InitClient(session *gocql.Session, cl *model.ClientList, newClient *model.Client) error {

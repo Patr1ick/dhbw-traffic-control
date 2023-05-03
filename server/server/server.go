@@ -8,8 +8,8 @@ import (
 	"github.com/Patr1ick/dhbw-traffic-control/server/controller"
 	"github.com/Patr1ick/dhbw-traffic-control/server/model"
 	"github.com/gin-gonic/gin"
-	"github.com/gocql/gocql"
 	"github.com/logrusorgru/aurora/v3"
+	"github.com/yugabyte/gocql"
 )
 
 func setupRouter(session *gocql.Session, settings *model.Settings) *gin.Engine {
@@ -33,28 +33,28 @@ func setupRouter(session *gocql.Session, settings *model.Settings) *gin.Engine {
 }
 
 func connectDB(settings *model.Settings) *gocql.Session {
-	cluster := gocql.NewCluster(*settings.CassandraAddress)
+	cluster := gocql.NewCluster(*settings.DatabaseAddress)
 	cluster.Keyspace = "traffic_control"
 	cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: "cassandra",
 		Password: "cassandra",
 	}
-	cluster.Timeout = time.Second * 30
+	cluster.Timeout = time.Second * 60
 	session, err := cluster.CreateSession()
 	if err != nil {
-		log.Println(aurora.Red("Could not connect to Casssandra on the first try..."))
+		log.Println(aurora.Red("Could not connect to Yugabyte on the first try..."))
 		for i := 5; i > 0; i-- {
 			log.Printf("Trying again (%v left)...\n", i)
 			session, err := cluster.CreateSession()
 			if err == nil {
-				log.Printf("%s on KeySpace %v", aurora.Green("Connected to Cassandra"), cluster.Keyspace)
+				log.Printf("%s on KeySpace %v", aurora.Green("Connected to Database"), cluster.Keyspace)
 				return session
 			}
 			time.Sleep(5 * time.Second)
 		}
-		log.Fatalln(aurora.Red("Could not connect to Cassandra. Terminating server..."))
+		log.Fatalln(aurora.Red("Could not connect to Database. Terminating server..."))
 	}
-	log.Printf("%s on KeySpace %v", aurora.Green("Connected to Cassandra"), cluster.Keyspace)
+	log.Printf("%s on KeySpace %v", aurora.Green("Connected to Yugabyte"), cluster.Keyspace)
 
 	return session
 
