@@ -40,7 +40,6 @@ func connectDB(settings *model.Settings) *gocql.Session {
 	}
 	cluster.Timeout = time.Second * 60
 	session, err := cluster.CreateSession()
-	defer session.Close()
 	if err != nil {
 		log.Println(aurora.Red("Could not connect to Yugabyte on the first try..."))
 		for i := 5; i > 0; i-- {
