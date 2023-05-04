@@ -2,11 +2,13 @@
 
 Project for the subject Distributed Systems at the Cooperative State University Stuttgart.
 
-## Production
+## Production setup
 
 Production means the operation of the system for a distributed system. The system is intended for three nodes (servers) and one client, as required in the requirements.
 
 ### Requirements
+
+The following components are required to start the client/server.
 
 #### Client
 
@@ -17,9 +19,9 @@ Production means the operation of the system for a distributed system. The syste
 
 -   Docker
 
-### Execution
+### Detailed description for setup
 
-You can find the detailed description to run
+You can find the detailed description how to setup the server or client.
 
 -   [server](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/README.md)
 -   [client](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/client/README.md)

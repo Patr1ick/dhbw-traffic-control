@@ -1,12 +1,15 @@
 # Server
 
+The server manages the requests from the client. It consists of the backend and the database YugabyteDB.
+
 ## Production
 
 To use the server for production the [docker-compose.yaml](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml) can be used.
 
 ### Prerequisites
 
-Note that the IP addresses for YugabyteDB need to be changed for the database to work! You have to change the following things **for each node individually**:
+In the `docker-compose.yaml` the IP-addresses for the nodes are `192.168.178.47`, `192.168.178.48`, `192.168.178.49`. If you want to use them aswell you still need to adjust the `docker-compose.yaml` **for each node individually**.
+If you want to use other IP-adresses you need to change every field which is listed below.
 
 | File and Line                                                                                                                  | Description                                                                                                                                                                                                         |
 | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -21,7 +24,7 @@ Note that the IP addresses for YugabyteDB need to be changed for the database to
 
 ### Start the docker container
 
-After that, the docker compose can be started with the following command.
+After you changed the `docker-compose.yaml` for one node, the docker container can be started with the following command.
 
 ```bash
 # Build if needed
