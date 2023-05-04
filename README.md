@@ -1,6 +1,26 @@
 # Traffic Control
 
-Project for the subject Distributed System at the Cooperative State University Stuttgart.
+Project for the subject Distributed Systems at the Cooperative State University Stuttgart.
+
+## Production
+
+### Requirements
+
+#### Client
+
+-   Docker (for Windows via Docker Desktop and WSL)
+-   Go
+
+#### Server
+
+-   Docker
+
+### Execution
+
+You can find the detailed description to run
+
+-   [server](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/README.md)
+-   [client](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/client/README.md)
 
 ## Local Development Setup
 
@@ -17,24 +37,3 @@ This starts the Docker containers for the server and Apache Cassandra. Another c
 
 The backend is accessible under `http://localhost:8080/`.
 Apache Cassandra is accessible under port `9042` and the credentials are both password and username `cassandra`.
-
-## Production
-
-### Server
-
-You have to change in the `server/docker-compose.yaml` the following environment variables:
-
--   `CASSANDRA_SEEDS`: The ip addresses of the other nodes
--   `CASSANDRA_BROADCAST_ADDRESS`: The own ip address
-
-After that you can start the container:
-
-```bash
-docker compose up -d
-```
-
-Currently you have to initialise the database yourself. Therefore, the script that you execute under `db/init.cql` must be executed on the database. The server will connect to it automatically.
-
-### Client
-
-tbd.

@@ -8,20 +8,39 @@ To use the server for production the [docker-compose.yaml](https://github.com/Pa
 
 Note that the IP addresses for YugabyteDB need to be changed for the database to work! You have to change the following things **for each node individually**:
 
--   [docker-compose.yaml (Line 22)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L22): The `master_addresses` specifies all masters of Yugabyte which runs on all (three) nodes.
--   [docker-compose.yaml (Line 23)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L23): The `server_broadcast_addresses` specifies the IP-address the Yugabyte master instance is listening to.
--   [docker-compose.yaml (Line 42)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L22): The `tserver_master_addrs` specifies in a comma-seperated list all IP-addresses for the `yb-master` which runs on all (three) nodes.
--   [docker-compose.yaml (Line 43)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L43): The `server_broadcast_addresses` specifies the IP-address the Yugabyte tserver instance is listening to.
+| File and Line                                                                                                                  | Description                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [docker-compose.yaml (Line 7)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L7)       | Defines the IP-address of the db for the server. Set this value to the current nodes IP-address.                                                                                                                    |
+| [docker-compose.yaml (Line 20)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L20)     | `master_addresses` defines all YugabyteDB master IP-addresses with the port `7100` in a comma seperated list. Replace with your IP-Address of all nodes where the master is running (for three nodes three master). |
+| [docker-compose.yaml (Line 21)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L21)     | `rpc_bind_adresses` defines the IP-address the master listens to. Replace here the IP-address with the current node address (with the port `7100`).                                                                 |
+| [docker-compose.yaml (Line 24, 25)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L24) | Defines the region (datacenter) and zone of the master. Default is here `raspi1` for region and `node1` for zone. Increment the number for each node.                                                               |
+| [docker-compose.yaml (Line 41)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L41)     | `tserver_master_addrs` defines all YugabyteDB master IP-addresses with the port `7100` in a comma seperated list. Replace with your IP-Address of all nodes where the master is running.                            |
+| [docker-compose.yaml (Line 42)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L42)     | `rpc_bind_adresses` defines the IP-address the tserver listens to. Replace the IP-address with the current nodes address (with the port `9100`).                                                                    |
+| [docker-compose.yaml (Line 43)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L43)     | `cql_proxy_bind_adress` defines the address and port where a cql-client can access the db. Replace the IP-address with the current nodes address (with the port `9042`).                                            |
+| [docker-compose.yaml (Line 45, 46)](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/server/docker-compose.yaml#L46) | Defines the region (datacenter) and zone of the tserver. Default is here `raspi1` for region and `node1` for zone. Increment the number for each node.                                                              |
 
 ### Start the docker container
 
 After that, the docker compose can be started with the following command.
 
 ```bash
+# Build if needed
+sudo docker compose build
+# Start container
 sudo docker compose up -d
 ```
 
-This starts the server and the database container.
+The following ports are used and need to be available:
+| Port | Description |
+|--------|---------------------------------------|
+| `7000` | Webserver of YugabyteDB master |
+| `7100` | Internode RPC communication (master) |
+| `8080` | REST-API of the backend |
+| `9000` | Webserver of the YugabyteDB tserver |
+| `9100` | Internode RPC communication (tserver) |
+| `9042` | Client API for CQL |
+
+The YugabyteDB masters will select a leader according to the Raft concensus. At least two masters need to be available for this proccess. When a leader is elected the server will be able to connect to the database. The server will initialised the keyspace and table if they are not existing. After that the server can used under the port as defined earlier.
 
 [//]: # "Setup database further: Init keyspace and table"
 

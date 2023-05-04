@@ -40,7 +40,6 @@ services:
             ./bin/yb-tserver 
             --tserver_master_addrs 192.168.178.47:7100,192.168.178.48:7100,192.168.178.49:7100 
             --rpc_bind_addresses 192.168.178.47:9100 
-            --server_broadcast_addresses 192.168.178.47:9100
             --cql_proxy_bind_address 192.168.178.47:9042
             --placement_cloud private
             --placement_region raspi1
