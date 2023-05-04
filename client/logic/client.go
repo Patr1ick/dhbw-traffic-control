@@ -35,7 +35,7 @@ type UpdatePos struct {
 	OldPos Pos
 }
 
-func LeadVehicle(pos StartPos) error {
+func LeadVehicle(pos StartPos, address string) error {
 
 	//Timestamp start
 	timeBeginn := time.Now()
@@ -50,7 +50,7 @@ func LeadVehicle(pos StartPos) error {
 
 	var myUpdatePos UpdatePos
 
-	if err := start(&startPos); err != nil {
+	if err := start(&startPos, address); err != nil {
 		log.Println(err.Error())
 		return fmt.Errorf("could not set start point")
 	}
@@ -59,7 +59,7 @@ func LeadVehicle(pos StartPos) error {
 	targetPos.Id = startPos.Id
 	log.Println("Starting ID: ", targetPos.Id)
 	for {
-		move(&targetPos, &myUpdatePos)
+		move(&targetPos, &myUpdatePos, address)
 
 		if (myUpdatePos.NewPos.X == targetPos.Pos.X) &&
 			(myUpdatePos.NewPos.Y == targetPos.Pos.Y) {
@@ -75,8 +75,8 @@ func LeadVehicle(pos StartPos) error {
 	return nil
 }
 
-func start(startPos *VehiclePos) error {
-	const url = "http://localhost:9000/v1/traffic/start"
+func start(startPos *VehiclePos, address string) error {
+	url := fmt.Sprintf("http://%v/v1/traffic/start", address)
 
 	requestBodyString := fmt.Sprintf(`
 	{
@@ -128,8 +128,8 @@ func start(startPos *VehiclePos) error {
 	return nil
 }
 
-func move(targetPos *VehiclePos, updatePos *UpdatePos) error {
-	const url = "http://localhost:9000/v1/traffic/move"
+func move(targetPos *VehiclePos, updatePos *UpdatePos, address string) error {
+	url := fmt.Sprintf("http://%v/v1/traffic/move", address)
 	requestBodyString := fmt.Sprintf(`
 	{
 		"target": {
