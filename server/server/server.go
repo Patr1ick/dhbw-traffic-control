@@ -66,13 +66,18 @@ func initDB(session *gocql.Session) {
 	}
 
 	// Initialise Table and Constraints
-	var stmt = `
-		CREATE TABLE IF NOT EXISTS traffic_control.clients ( x int, y int, z int, id uuid PRIMARY KEY ) WITH transactions = {'enabled': 'true'};
-		CREATE UNIQUE INDEX IF NOT EXISTS traffic_control_coordinates ON traffic_control.clients(x, y, z);
+	var stmt_table = `
+	CREATE TABLE IF NOT EXISTS traffic_control.clients ( x int, y int, z int, id uuid PRIMARY KEY ) WITH transactions = {'enabled': 'true'};
 	`
+	if err := session.Query(stmt_table).Exec(); err != nil {
+		log.Fatal(aurora.Red("Could not create table."))
+	}
 
-	if err := session.Query(stmt).Exec(); err != nil {
-		log.Fatal(aurora.Red("Could not create database and constraint."))
+	var stmt_unique = `
+	CREATE UNIQUE INDEX IF NOT EXISTS traffic_control_coordinates ON traffic_control.clients(x, y, z);
+	`
+	if err := session.Query(stmt_unique).Exec(); err != nil {
+		log.Fatal(aurora.Red("Could not create unique index."))
 	}
 }
 
