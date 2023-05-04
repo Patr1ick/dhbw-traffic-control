@@ -47,15 +47,20 @@ func connectDB(settings *model.Settings) *gocql.Session {
 			log.Printf("Trying again (%v left)...\n", i)
 			session, err := cluster.CreateSession()
 			if err == nil {
-				log.Printf("%s on KeySpace %v", aurora.Green("Connected to Database"), cluster.Keyspace)
+				log.Printf("%s", aurora.Green("Connected to Database"))
 				return session
 			}
 			time.Sleep(5 * time.Second)
 		}
 		log.Fatalln(aurora.Red("Could not connect to Database. Terminating server..."))
 	}
-	log.Printf("%s on KeySpace %v", aurora.Green("Connected to Yugabyte"), cluster.Keyspace)
+	log.Printf("%s", aurora.Green("Connected to Yugabyte"))
 
+	return session
+
+}
+
+func initDB(session *gocql.Session) {
 	// Initialise KeySpace
 	if err := session.Query("CREATE KEYSPACE IF NOT EXISTS traffic_control;").Exec(); err != nil {
 		log.Fatal(aurora.Red("Could not create keyspace."))
@@ -70,13 +75,12 @@ func connectDB(settings *model.Settings) *gocql.Session {
 	if err := session.Query(stmt).Exec(); err != nil {
 		log.Fatal(aurora.Red("Could not create database and constraint."))
 	}
-
-	return session
-
 }
 
 func Start(settings *model.Settings) {
 	session := connectDB(settings)
+
+	initDB(session)
 
 	r := setupRouter(session, settings)
 	r.Run()
