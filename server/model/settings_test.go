@@ -10,10 +10,10 @@ type Case struct {
 
 func TestPositionValid(t *testing.T) {
 	settings := Settings{
-		Width:            1000,
-		Height:           1000,
-		Depth:            2,
-		CassandraAddress: nil,
+		Width:           1000,
+		Height:          1000,
+		Depth:           2,
+		DatabaseAddress: nil,
 	}
 
 	cases := []Case{
