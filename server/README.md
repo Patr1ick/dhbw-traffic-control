@@ -42,13 +42,22 @@ The following ports are used and need to be available:
 
 The YugabyteDB masters will select a leader according to the Raft concensus. At least two masters need to be available for this proccess. When a leader is elected the server will be able to connect to the database. The server will initialised the keyspace and table if they are not existing. After that the server can used under the port as defined earlier.
 
-[//]: # "Setup database further: Init keyspace and table"
+#### Clean-Up Database
+
+You need install ycqlsh according to the installation tutorial [here](https://docs.yugabyte.com/preview/admin/ycqlsh/).
+
+```bash
+# Access database
+ycqlsh -u cassandra -p cassandra <ip>:<port>
+# Remove all rows
+TRUNCATE traffic_control.clients;
+```
 
 ## Local Development Setup
 
 ### Requirements
 
-A running instance of YugabyteDB has to be accessible under the port `9042` (default ycql port). Additionally, the keyspace `traffic_control` and the table `clients` has to be existing (To setup the database the script [init.cql](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/db/init.cql) can be used.)
+A running instance of YugabyteDB has to be accessible under the port `9042` (default ycql port). You can use the [docker-compose-dev.yaml](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/docker-compose-dev.yaml) to setup the YugabyteDB (and/or the server).
 
 ### Build and run
 
@@ -61,14 +70,16 @@ main.exe <arguments>
 
 | Argument          | Description                                                     | required |
 | ----------------- | --------------------------------------------------------------- | -------- |
-| `-x`              | Width of the field                                              | `true`   |
-| `-y`              | Height of the field                                             | `true`   |
-| `-z`              | Depth of the field (how many clients per positions are allowed) | `true`   |
+| `-x`, `--width`   | Width of the field                                              | `true`   |
+| `-y`, `--height`  | Height of the field                                             | `true`   |
+| `-z`, `--depth`   | Depth of the field (how many clients per positions are allowed) | `true`   |
 | `-a`, `--address` | The address of the Yugabyte Database                            | `true`   |
 
 The server will start and listen to port **8080**.
 
 ### Docker
+
+Alternatively, the docker image can be build and started as followed. Note that the settings in the docker container is in Release mode which means the webserver is not debugging.
 
 ```bash
 # Build docker container

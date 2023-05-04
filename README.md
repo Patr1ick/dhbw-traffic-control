@@ -4,12 +4,14 @@ Project for the subject Distributed Systems at the Cooperative State University 
 
 ## Production
 
+Production means the operation of the system for a distributed system. The system is intended for three nodes (servers) and one client, as required in the requirements.
+
 ### Requirements
 
 #### Client
 
 -   Docker (for Windows via Docker Desktop and WSL)
--   Go
+-   [Go](https://go.dev/dl/)
 
 #### Server
 
@@ -24,6 +26,7 @@ You can find the detailed description to run
 
 ## Local Development Setup
 
+The local development setup should be **only** used for local testing.
 To set up the local development environment, simply set up the corresponding docker compose.
 
 ```bash
@@ -33,7 +36,11 @@ docker compose -f docker-compose-dev.yaml build
 docker compose -f docker-compose-dev.yaml up -d
 ```
 
-This starts the Docker containers for the server and Apache Cassandra. Another container initialises the Apache Cassandra database with the respective KeySpace and table. In the local setup, Caddy is currently not considered. Adjustments do not have to be made because only one instance of Cassandra is running and the IP addresses are assigned via Docker.
+This starts the Docker containers for the server and YugabyteDB. In the local setup, Caddy is currently not considered, but can be integrated if the IP-addresses in the `Caddyfile` are changed to the local setup. Adjustments do not have to be made because only one YB-Master and YB-TServer is running and the IP-addresses are assigned via Docker.
 
 The backend is accessible under `http://localhost:8080/`.
-Apache Cassandra is accessible under port `9042` and the credentials are both password and username `cassandra`.
+The CQL API of YugabyteDB is accessible under the port `9042`.
+
+## License
+
+Licensed under [MIT-License](https://github.com/Patr1ick/dhbw-traffic-control/blob/main/LICENSE).
