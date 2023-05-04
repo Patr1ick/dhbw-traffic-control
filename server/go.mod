@@ -6,6 +6,7 @@ require (
 	github.com/akamensky/argparse v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/stretchr/testify v1.8.2
+	github.com/yugabyte/gocql v0.0.0-20221110041640-6fc475c5aeb0
 )
 
 require (
@@ -13,7 +14,6 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/yugabyte/gocql v0.0.0-20221110041640-6fc475c5aeb0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 )
 

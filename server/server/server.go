@@ -34,13 +34,13 @@ func setupRouter(session *gocql.Session, settings *model.Settings) *gin.Engine {
 
 func connectDB(settings *model.Settings) *gocql.Session {
 	cluster := gocql.NewCluster(*settings.DatabaseAddress)
-	cluster.Keyspace = "traffic_control"
 	cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: "cassandra",
 		Password: "cassandra",
 	}
 	cluster.Timeout = time.Second * 60
 	session, err := cluster.CreateSession()
+	defer session.Close()
 	if err != nil {
 		log.Println(aurora.Red("Could not connect to Yugabyte on the first try..."))
 		for i := 5; i > 0; i-- {
@@ -55,6 +55,21 @@ func connectDB(settings *model.Settings) *gocql.Session {
 		log.Fatalln(aurora.Red("Could not connect to Database. Terminating server..."))
 	}
 	log.Printf("%s on KeySpace %v", aurora.Green("Connected to Yugabyte"), cluster.Keyspace)
+
+	// Initialise KeySpace
+	if err := session.Query("CREATE KEYSPACE IF NOT EXISTS traffic_control;").Exec(); err != nil {
+		log.Fatal(aurora.Red("Could not create keyspace."))
+	}
+
+	// Initialise Table and Constraints
+	var stmt = `
+		CREATE TABLE IF NOT EXISTS traffic_control.clients ( x int, y int, z int, id uuid PRIMARY KEY ) WITH transactions = {'enabled': 'true'};
+		CREATE UNIQUE INDEX IF NOT EXISTS traffic_control_coordinates ON traffic_control.clients(x, y, z);
+	`
+
+	if err := session.Query(stmt).Exec(); err != nil {
+		log.Fatal(aurora.Red("Could not create database and constraint."))
+	}
 
 	return session
 

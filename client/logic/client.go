@@ -76,7 +76,7 @@ func LeadVehicle(pos StartPos) error {
 }
 
 func start(startPos *VehiclePos) error {
-	const url = "http://localhost:8080/v1/traffic/start"
+	const url = "http://localhost:9000/v1/traffic/start"
 
 	requestBodyString := fmt.Sprintf(`
 	{
@@ -129,7 +129,7 @@ func start(startPos *VehiclePos) error {
 }
 
 func move(targetPos *VehiclePos, updatePos *UpdatePos) error {
-	const url = "http://localhost:8080/v1/traffic/move"
+	const url = "http://localhost:9000/v1/traffic/move"
 	requestBodyString := fmt.Sprintf(`
 	{
 		"target": {
