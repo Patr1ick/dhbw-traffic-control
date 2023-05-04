@@ -25,9 +25,15 @@ sudo docker compose up -d
 ### Run client
 
 In order to run the client you do not need to build it (but it is possible).
+To Start 
 
 ```bash
-go run main.go
+go run main.go <arguments>
+```
+| Argument          | Description                                                                                        | required |
+| ----------------- | ---------------------------------------------------------------------------------------------------| -------- |
+| `-x`              | The number of vehicles to be generated. The number must not be less than 1 and not more than 1000. | `true`   |
+| `-c`              | The address to caddy. Should be: localhost:<port> or <ip>:<port>                                   | `true`   |
 ```
 
 ## Without Caddy
